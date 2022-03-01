@@ -14,4 +14,5 @@
 
 
 
-Project URL : [Notion URL](https://exciting-otter-a4d.notion.site/Chat-App-06abe6467c0b4183ae95c324d35d5902)
+Project URL : [Notion Note1](https://exciting-otter-a4d.notion.site/Chat-App-06abe6467c0b4183ae95c324d35d5902)
+Reference URL : [Notion Note2](https://exciting-otter-a4d.notion.site/Zoom-Clone-WebSocket-525718a739a04e3583ec2d2e5592b93e)
