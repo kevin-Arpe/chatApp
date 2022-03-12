@@ -1,5 +1,6 @@
 import express from "express";
 import http from "http";
+import WebSocket from "ws";
 
 
 /* Server Side code */
@@ -12,7 +13,23 @@ app.use("/public", express.static(__dirname + "/public")); // image, video, html
 app.get("/", (_, res) => res.render("home")); /* 처음에는 get으로 입력받는 값, 두번 째 인자는 콜백함수 */
 app.get("/*", (_, res) => res.redirect("/"));
 
-const httpServer = http.createServer(app);
+const server = http.createServer(app);
+const wss = new WebSocket.Server({ server });
 
+let sockets = [];
 
-httpServer.listen(3000, () => console.log("Listening on port:3000"));
+wss.on("connection", (socket) => {
+    sockets.push(socket);
+    console.log("Someone joined");
+    
+    socket.on("close", () => {
+        sockets = sockets.filter((item) => item !== socket);
+        console.log("Someone disconnected");
+    });
+
+    socket.on("message", (msg) => {
+        console.log(msg.toString());
+    });
+});
+
+server.listen(3000, () => console.log("Listening on port:3000"));
