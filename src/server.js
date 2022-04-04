@@ -1,7 +1,7 @@
 import express from "express";
 import http from "http";
-import WebSocket from "ws";
-
+// import WebSocket from "ws";
+import { Server } from "socket.io";
 
 /* Server Side code */
 const app = express();
@@ -13,23 +13,29 @@ app.use("/public", express.static(__dirname + "/public")); // image, video, html
 app.get("/", (_, res) => res.render("home")); /* 처음에는 get으로 입력받는 값, 두번 째 인자는 콜백함수 */
 app.get("/*", (_, res) => res.redirect("/"));
 
-const server = http.createServer(app);
-const wss = new WebSocket.Server({ server });
+const httpServer = http.createServer(app);
+// const wss = new WebSocket.Server({ server });
+const io = new Server(httpServer, {
+    cors: {
+        origin: ["https://admin.socket.io"],
+        credentia: true,
+    },
+})
 
 let sockets = [];
 
-wss.on("connection", (socket) => {
-    sockets.push(socket);
-    console.log("Someone joined");
+// wss.on("connection", (socket) => {
+//     sockets.push(socket);
+//     console.log("Someone joined");
     
-    socket.on("close", () => {
-        sockets = sockets.filter((item) => item !== socket);
-        console.log("Someone disconnected");
-    });
+//     socket.on("close", () => {
+//         sockets = sockets.filter((item) => item !== socket);
+//         console.log("Someone disconnected");
+//     });
 
-    socket.on("message", (msg) => {
-        console.log(msg.toString());
-    });
-});
+//     socket.on("message", (msg) => {
+//         console.log(msg.toString());
+//     });
+// });
 
-server.listen(3000, () => console.log("Listening on port:3000"));
+httpServer.listen(3000, () => console.log("Listening on port:3000"));
