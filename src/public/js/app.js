@@ -2,32 +2,27 @@
 const socket = io();
 
 /* HTML Obj */
-const frm_room = document.getElementsById("frm_room");
+const frm_room = document.getElementById("frm_room");
 const input_room = frm_room.querySelector("input");
 const btn_room = frm_room.querySelector("button");
+
+const list_room = document.getElementById("list_room");
 
 const frm_msg = document.getElementById("frm_msg");
 const input_msg = frm_msg.querySelector("input");
 const btn_msg = frm_msg.querySelector("button");
 
-/* Socket Scripts */
-// socket.addEventListener("open", () => {
-//     console.log("Connect to server ✅");
-// });
-
-// socket.addEventListener("close", () => {
-//     console.log("Disconnect to server ❌");
-// });
-
-// socket.addEventListener("message", (msg) => {
-//     console.log(`Someone : $${msg}`);
-// });
-
 /* App Scripts */
-function handleRoomSubmit(e) {
+function enterRoom(roomName) {
+    console.log(`Enter room(Room name : ${roomName})`);
+}
+
+function handleRoomCreate(e) {
     e.preventDefault();
-    const room = input_room.value;
-    socket.send(room);
+    const roomName = input_room.value;
+    socket.emit("create_room", roomName, () => {
+        enterRoom(roomName);
+    });
     input_room.value = "";
 }
 
@@ -40,7 +35,19 @@ function handleMsgSubmit(e) {
 }
 
 function init() {
-    frm_msg.addEventListener("submit", handleMsgSubmit);
+    frm_room.addEventListener("submit", handleRoomCreate);
+
+    /* Socket Script */
+    socket.on("connect", () => {
+        socket.on("enter_socket");
+    });
+
+    socket.on("create_room", (roomName) => {
+        console.log(`Room ${roomName} is created`);
+        const li = document.createElement("li");
+        li.innerText = roomName;
+        list_room.appendChild(li);
+    });
 }
 
 init();

@@ -8,8 +8,11 @@ html(lang="en")
     body
         form#frm_room
             input(type="room")
-            button Send 
+            button Send
+        ul#list_room
         form#frm_msg
             input(type="text")
             button Send  
+            
+    script(src="/socket.io/socket.io.js")
     script(src="public/js/app.js")

@@ -14,28 +14,26 @@ app.get("/", (_, res) => res.render("home")); /* 처음에는 get으로 입력�
 app.get("/*", (_, res) => res.redirect("/"));
 
 const httpServer = http.createServer(app);
-// const wss = new WebSocket.Server({ server });
 const io = new Server(httpServer, {
     cors: {
         origin: ["https://admin.socket.io"],
-        credentia: true,
+        credentials: true,
     },
-})
+});
 
 let sockets = [];
 
-// wss.on("connection", (socket) => {
-//     sockets.push(socket);
-//     console.log("Someone joined");
-    
-//     socket.on("close", () => {
-//         sockets = sockets.filter((item) => item !== socket);
-//         console.log("Someone disconnected");
-//     });
+io.on("connection", (socket) => {
+    socket["username"] = "Unknown";
 
-//     socket.on("message", (msg) => {
-//         console.log(msg.toString());
-//     });
-// });
+    socket.on("create_room", (roomName, browserFunc) => {
+        socket.join(roomName);
+        console.log(`Room ${roomName} is created`);
+
+        io.sockets.emit("create_room", roomName);
+
+        browserFunc();
+    });
+});
 
 httpServer.listen(3000, () => console.log("Listening on port:3000"));
