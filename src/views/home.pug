@@ -4,15 +4,25 @@ html(lang="en")
         meta(charset="UTF-8")
         meta(http-equiv="X-UA-Compatible", content="IE=edge")
         meta(name="viewport", content="width=device-width, initial-scale=1.0")
+        style
+            include style.css
         title Document
     body
-        form#frm_room
-            input(type="room")
-            button Send
-        ul#list_room
-        form#frm_msg
-            input(type="text")
-            button Send  
+        div#app
+            div#box_front
+                form#frm_username
+                    input(type="text" placeholder="사용하실 아이디를 입력해주세요")
+            div#box_room
+                h3 Room name
+                form#frm_room
+                    input(type="text")
+                    button Send
+                ul#list_room
+            div#box_chat
+                h3 Message
+                form#frm_msg
+                    input(type="text")
+                button Send  
             
     script(src="/socket.io/socket.io.js")
     script(src="public/js/app.js")

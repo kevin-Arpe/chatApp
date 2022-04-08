@@ -26,6 +26,11 @@ let sockets = [];
 io.on("connection", (socket) => {
     socket["username"] = "Unknown";
 
+    socket.on("make_username", (username, browserFunc) => {
+        socket["username"] = username;
+        browserFunc();
+    });
+
     socket.on("create_room", (roomName, browserFunc) => {
         socket.join(roomName);
         console.log(`Room ${roomName} is created`);
@@ -33,6 +38,10 @@ io.on("connection", (socket) => {
         io.sockets.emit("create_room", roomName);
 
         browserFunc();
+    });
+
+    socket.on("send_msg", (msg, browserFunc) => {
+        console.log(`${socket["username"]} : ${msg}`);
     });
 });
 
