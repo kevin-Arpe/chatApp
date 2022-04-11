@@ -7,11 +7,12 @@ const frm_username = box_front.querySelector("#frm_username");
 const input_username = frm_username.querySelector("input");
 const btn_username = frm_username.querySelector("button");
 
-const box_room = document.getElementById("box_room");
-const frm_room = box_room.querySelector("#frm_room");
+const box_main = document.getElementById("box_main");
+const frm_room = box_main.querySelector("#frm_room");
 const input_room = frm_room.querySelector("input");
 const btn_room = frm_room.querySelector("button");
-const list_room = document.getElementById("list_room");
+const menu_top = box_main.querySelector("#menu_top");
+const list_room = box_main.querySelector("#list_room");
 
 const box_chat = document.getElementById("box_chat");
 const frm_msg = box_chat.querySelector("#frm_msg");
@@ -30,13 +31,19 @@ function handleUsernameSubmit(e) {
 
 function showRooms() {
     box_front.style.display = "none";
-    box_room.style.display = "block";
+    box_main.style.display = "flex";
 }
 
 function enterRoom(roomName) {
     console.log(`Enter room(Room name : ${roomName})`);
-    box_room.style.display = "none";
+    
+    box_main.style.display = "none";
     box_chat.style.display = "block";
+}
+
+function handleRoomClk() {
+    const roomName = this.innerText;
+    socket.emit("enter_room", roomName, enterRoom);
 }
 
 function handleRoomCreate(e) {
@@ -59,6 +66,13 @@ function handleMsgSubmit(e) {
     input_msg.value = "";
 }
 
+function makeRoomList(roomName) {
+    const li = document.createElement("li");
+    li.innerText = roomName;
+    li.addEventListener("click", handleRoomClk);
+    list_room.appendChild(li);
+}
+
 function init() {
     frm_username.addEventListener("submit", handleUsernameSubmit);
     frm_room.addEventListener("submit", handleRoomCreate);
@@ -66,14 +80,21 @@ function init() {
 
     /* Socket Script */
     socket.on("connect", () => {
-        socket.on("enter_socket");
+        socket.emit("req_roomInfo");
     });
 
-    socket.on("create_room", (roomName) => {
+    socket.on("roomInfo", (publicRooms) => {
+        const roomList = publicRooms;
+        roomList.forEach((roomName) => makeRoomList(roomName));
+    });
+
+    socket.on("change_room", (roomName) => {
         console.log(`Room ${roomName} is created`);
-        const li = document.createElement("li");
-        li.innerText = roomName;
-        list_room.appendChild(li);
+        makeRoomList(roomName);
+    });
+
+    socket.on("disconnect", () => {
+        alert("Disconnected from server");
     });
 }
 

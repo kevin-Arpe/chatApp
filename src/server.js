@@ -21,10 +21,21 @@ const io = new Server(httpServer, {
     },
 });
 
-let sockets = [];
+function getPublicRooms() {
+    const {sockets: {adapter: { sids, rooms }}} = io;
+    const publicRooms = [];
+    rooms.forEach((_, key) => {
+        if (sids.get(key) === undefined) publicRooms.push(key);
+    });
+    return publicRooms;
+}
 
 io.on("connection", (socket) => {
     socket["username"] = "Unknown";
+
+    socket.on("req_roomInfo", () => {
+        socket.emit("roomInfo", getPublicRooms());
+    });
 
     socket.on("make_username", (username, browserFunc) => {
         socket["username"] = username;
@@ -35,9 +46,14 @@ io.on("connection", (socket) => {
         socket.join(roomName);
         console.log(`Room ${roomName} is created`);
 
-        io.sockets.emit("create_room", roomName);
+        io.sockets.emit("change_room", roomName);
 
         browserFunc();
+    });
+
+    socket.on("enter_room", (roomName, browserFunc) => {
+        socket.join(roomName);
+        browserFunc(roomName);
     });
 
     socket.on("send_msg", (msg, browserFunc) => {

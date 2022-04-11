@@ -10,19 +10,26 @@ html(lang="en")
     body
         div#app
             div#box_front
+                img#icon_talk(src="public/image/icon_talk.png")
                 form#frm_username
-                    input(type="text" placeholder="사용하실 아이디를 입력해주세요")
-            div#box_room
-                h3 Room name
-                form#frm_room
-                    input(type="text")
-                    button Send
-                ul#list_room
+                    input(type="text" placeholder="사용할 아이디를 입력해주세요")
+                    button 확인
+            div#box_main
+                nav
+                    ul#list_menu
+                        li#user_info
+                        li#chat_info
+                main
+                    div#menu_top
+                        form#frm_room
+                            input(type="text")
+                            button Send
+                    ul#list_room
             div#box_chat
                 h3 Message
                 form#frm_msg
                     input(type="text")
-                button Send  
+                    button 전송  
             
     script(src="/socket.io/socket.io.js")
     script(src="public/js/app.js")
