@@ -43,12 +43,27 @@ io.on("connection", (socket) => {
     });
 
     socket.on("create_room", (roomName, browserFunc) => {
-        socket.join(roomName);
-        console.log(`Room ${roomName} is created`);
+        console.log(io.sockets.adapter.rooms);
+        const rooms = io.sockets.adapter.rooms;
 
-        io.sockets.emit("change_room", roomName);
+        let isVaildRoomName = 1;
+        rooms.forEach((_, key) => {
+            if (key == roomName) {
+                isVaildRoomName = 0;
+                return false;
+            }
+        });
 
-        browserFunc();
+        if (!isVaildRoomName) {
+            socket.emit("error", "That room name already exist");
+        } else {
+            socket.join(roomName);
+            console.log(`Room ${roomName} is created`);
+
+            io.sockets.emit("change_room", roomName);
+
+            browserFunc();
+        }
     });
 
     socket.on("enter_room", (roomName, browserFunc) => {
@@ -57,7 +72,15 @@ io.on("connection", (socket) => {
     });
 
     socket.on("send_msg", (msg, browserFunc) => {
-        console.log(`${socket["username"]} : ${msg}`);
+        const data_msg = {
+            "username": socket["username"],
+            "msg": msg
+        }
+        const username = socket["username"];
+        
+        browserFunc();
+        console.log(`${data_msg.username} : ${data_msg.msg}`);
+        socket.rooms.forEach((room) => socket.to(room).emit("send_msg", data_msg));
     });
 });
 

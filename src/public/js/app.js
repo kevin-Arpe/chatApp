@@ -15,6 +15,7 @@ const menu_top = box_main.querySelector("#menu_top");
 const list_room = box_main.querySelector("#list_room");
 
 const box_chat = document.getElementById("box_chat");
+const list_msg = box_chat.querySelector("#list_msg");
 const frm_msg = box_chat.querySelector("#frm_msg");
 const input_msg = frm_msg.querySelector("input");
 const btn_msg = frm_msg.querySelector("button");
@@ -62,7 +63,9 @@ function handleMsgSubmit(e) {
     const msg = input_msg.value;
 
     if (msg === "") return;
-    socket.emit("send_msg", msg);
+    socket.emit("send_msg", msg, () => {
+        drawMyChatList(msg);
+    });
     input_msg.value = "";
 }
 
@@ -71,6 +74,20 @@ function makeRoomList(roomName) {
     li.innerText = roomName;
     li.addEventListener("click", handleRoomClk);
     list_room.appendChild(li);
+}
+
+function drawMyChatList(msg) {
+    const li = document.createElement("li");
+    li.classList.add("my_msg")
+    li.innerText = msg;
+    list_msg.appendChild(li);
+}
+
+function drawFriendsChat(username, msg) {
+    const li = document.createElement("li");
+    li.classList.add("friends_msg");
+    li.innerText = `${username}: ${msg}`;
+    list_msg.appendChild(li);
 }
 
 function init() {
@@ -91,6 +108,18 @@ function init() {
     socket.on("change_room", (roomName) => {
         console.log(`Room ${roomName} is created`);
         makeRoomList(roomName);
+    });
+
+    socket.on("send_msg", (data_msg) => {
+        const username = data_msg.username;
+        const msg = data_msg.msg;
+
+        console.log(`${username}: ${msg}`);
+        drawFriendsChat(username, msg);
+    });
+
+    socket.on("error", (err_msg) => {
+        alert(err_msg);
     });
 
     socket.on("disconnect", () => {
