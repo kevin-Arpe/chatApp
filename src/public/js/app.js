@@ -1,3 +1,5 @@
+
+
 // const socket = new WebSocket(`ws://${window.location.host}`);
 const socket = io();
 
@@ -17,7 +19,7 @@ const list_room = box_main.querySelector("#list_room");
 const box_chat = document.getElementById("box_chat");
 const list_msg = box_chat.querySelector("#list_msg");
 const frm_msg = box_chat.querySelector("#frm_msg");
-const input_msg = frm_msg.querySelector("input");
+const input_msg = frm_msg.querySelector("textarea");
 const btn_msg = frm_msg.querySelector("button");
 
 /* App Scripts */
@@ -40,6 +42,13 @@ function enterRoom(roomName) {
     
     box_main.style.display = "none";
     box_chat.style.display = "block";
+
+    const data_msg = {
+        "type": "room_enter",
+        "username": "",
+        "roomName": roomName
+    }
+    drawSystemMsg(data_msg);
 }
 
 function handleRoomClk() {
@@ -58,15 +67,25 @@ function handleRoomCreate(e) {
     input_room.value = "";
 }
 
-function handleMsgSubmit(e) {
-    e.preventDefault();
+function handleMsgSubmit(e, isWithKeyPress) {
+    if (isWithKeyPress) e.preventDefault();
     const msg = input_msg.value;
 
     if (msg === "") return;
     socket.emit("send_msg", msg, () => {
-        drawMyChatList(msg);
+        drawMyChat(msg);
     });
     input_msg.value = "";
+}
+
+function handleMsgKeyPress(e) {
+    const isWithKeyPress = 1;
+    if (!e.shiftKey) {
+        if (e.keyCode == 13) {
+            e.preventDefault();
+            handleMsgSubmit(isWithKeyPress)
+        };
+    }
 }
 
 function makeRoomList(roomName) {
@@ -76,17 +95,51 @@ function makeRoomList(roomName) {
     list_room.appendChild(li);
 }
 
-function drawMyChatList(msg) {
+function drawMyChat(msg) {
     const li = document.createElement("li");
-    li.classList.add("my_msg")
-    li.innerText = msg;
+    li.classList.add("my_msg");
+    const textBox = document.createElement("div");
+    textBox.innerText = msg;
+    li.appendChild(textBox);
     list_msg.appendChild(li);
 }
 
-function drawFriendsChat(username, msg) {
+function drawFriendsChat(username, msg, isSameUser) {
     const li = document.createElement("li");
     li.classList.add("friends_msg");
-    li.innerText = `${username}: ${msg}`;
+    const div = document.createElement("div");
+
+    const textBox = document.createElement("div");
+    textBox.classList.add("textBox");
+    textBox.innerText = msg;
+
+    const nameBox = document.createElement("div");
+    if (!isSameUser) {
+        nameBox.classList.add("nameBox");
+        nameBox.innerText = username;
+        div.appendChild(nameBox);
+    }
+    div.appendChild(textBox);
+    li.appendChild(div);
+    list_msg.appendChild(li);
+}
+
+function drawSystemMsg(data_msg) {
+    const msg_type = data_msg.type;
+    const username = data_msg.username;
+    const roomName = data_msg.roomName;
+    
+    const li = document.createElement("li");
+    li.classList.add("system_msg");
+    const textBox = document.createElement("div");
+    textBox.classList.add("textBox");
+    if (msg_type == "user_enter") {
+        textBox.innerText = `${username}님이 입장하셨습니다`;
+    } else if (msg_type == "room_enter") {
+        textBox.innerText = `채팅방 ${roomName}에 입장하였습니다`;
+    }
+
+    li.appendChild(textBox);
     list_msg.appendChild(li);
 }
 
@@ -94,6 +147,7 @@ function init() {
     frm_username.addEventListener("submit", handleUsernameSubmit);
     frm_room.addEventListener("submit", handleRoomCreate);
     frm_msg.addEventListener("submit", handleMsgSubmit);
+    input_msg.addEventListener("keydown", handleMsgKeyPress);
 
     /* Socket Script */
     socket.on("connect", () => {
@@ -113,9 +167,14 @@ function init() {
     socket.on("send_msg", (data_msg) => {
         const username = data_msg.username;
         const msg = data_msg.msg;
+        const isSameUser = data_msg.isSameUser;
 
         console.log(`${username}: ${msg}`);
-        drawFriendsChat(username, msg);
+        drawFriendsChat(username, msg, isSameUser);
+    });
+
+    socket.on("system_msg", (data_msg) => {
+        drawSystemMsg(data_msg);
     });
 
     socket.on("error", (err_msg) => {
