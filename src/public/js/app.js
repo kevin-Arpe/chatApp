@@ -1,4 +1,5 @@
-
+/* CLASS_NAME */
+const CLASS_HIDDEN = "hidden";
 
 // const socket = new WebSocket(`ws://${window.location.host}`);
 const socket = io();
@@ -17,6 +18,7 @@ const menu_top = box_main.querySelector("#menu_top");
 const list_room = box_main.querySelector("#list_room");
 
 const box_chat = document.getElementById("box_chat");
+const icon_exit = document.querySelector("#icon_exit");
 const list_msg = box_chat.querySelector("#list_msg");
 const frm_msg = box_chat.querySelector("#frm_msg");
 const input_msg = frm_msg.querySelector("textarea");
@@ -33,15 +35,15 @@ function handleUsernameSubmit(e) {
 }
 
 function showRooms() {
-    box_front.style.display = "none";
-    box_main.style.display = "flex";
+    box_front.classList.add(CLASS_HIDDEN);
+    box_main.classList.remove(CLASS_HIDDEN);
 }
 
 function enterRoom(roomName) {
     console.log(`Enter room(Room name : ${roomName})`);
     
-    box_main.style.display = "none";
-    box_chat.style.display = "block";
+    box_main.classList.add(CLASS_HIDDEN);
+    box_chat.classList.remove(CLASS_HIDDEN);
 
     const data_msg = {
         "type": "room_enter",
@@ -67,6 +69,13 @@ function handleRoomCreate(e) {
     input_room.value = "";
 }
 
+function handleRoomExit() {
+    box_chat.classList.add(CLASS_HIDDEN);
+    box_main.classList.remove(CLASS_HIDDEN);
+
+    socket.emit("exit_room");
+}
+
 function handleMsgSubmit(e, isWithKeyPress) {
     if (isWithKeyPress) e.preventDefault();
     const msg = input_msg.value;
@@ -90,7 +99,14 @@ function handleMsgKeyPress(e) {
 
 function makeRoomList(roomName) {
     const li = document.createElement("li");
-    li.innerText = roomName;
+    const icon_room = document.createElement("div");
+    const text_roomname = document.createElement("div");
+    icon_room.classList.add("icon_room");
+    text_roomname.classList.add("text_roomname");
+    text_roomname.innerText = roomName;
+
+    li.appendChild(icon_room);
+    li.appendChild(text_roomname);
     li.addEventListener("click", handleRoomClk);
     list_room.appendChild(li);
 }
@@ -134,9 +150,11 @@ function drawSystemMsg(data_msg) {
     const textBox = document.createElement("div");
     textBox.classList.add("textBox");
     if (msg_type == "user_enter") {
-        textBox.innerText = `${username}님이 입장하셨습니다`;
+        textBox.innerText = `${username} 님이 입장하셨습니다`;
     } else if (msg_type == "room_enter") {
         textBox.innerText = `채팅방 ${roomName}에 입장하였습니다`;
+    } else if (msg_type == "user_exit") {
+        textBox.innerText = `${username} 님이 퇴장하셨습니다`;
     }
 
     li.appendChild(textBox);
@@ -144,8 +162,12 @@ function drawSystemMsg(data_msg) {
 }
 
 function init() {
+    box_main.classList.add(CLASS_HIDDEN);
+    box_chat.classList.add(CLASS_HIDDEN);
+
     frm_username.addEventListener("submit", handleUsernameSubmit);
     frm_room.addEventListener("submit", handleRoomCreate);
+    icon_exit.addEventListener("click", handleRoomExit);
     frm_msg.addEventListener("submit", handleMsgSubmit);
     input_msg.addEventListener("keydown", handleMsgKeyPress);
 
@@ -154,13 +176,15 @@ function init() {
         socket.emit("req_roomInfo");
     });
 
-    socket.on("roomInfo", (publicRooms) => {
+    socket.on("refreshRoomList", (publicRooms) => {
+        while (list_room.firstChild) {
+            list_room.removeChild(list_room.firstChild);
+        }
         const roomList = publicRooms;
         roomList.forEach((roomName) => makeRoomList(roomName));
     });
 
     socket.on("change_room", (roomName) => {
-        console.log(`Room ${roomName} is created`);
         makeRoomList(roomName);
     });
 

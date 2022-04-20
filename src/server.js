@@ -21,6 +21,7 @@ const io = new Server(httpServer, {
     },
 });
 
+let publicRooms;
 function getPublicRooms() {
     const {sockets: {adapter: { sids, rooms }}} = io;
     const publicRooms = [];
@@ -35,7 +36,7 @@ io.on("connection", (socket) => {
     socket["username"] = "Unknown";
 
     socket.on("req_roomInfo", () => {
-        socket.emit("roomInfo", getPublicRooms());
+        socket.emit("refreshRoomList", getPublicRooms());
     });
 
     socket.on("make_username", (username, browserFunc) => {
@@ -93,6 +94,39 @@ io.on("connection", (socket) => {
         console.log(`${data_msg.username} : ${data_msg.msg}`);
         socket.rooms.forEach((room) => socket.to(room).emit("send_msg", data_msg));
         prevSendUser = socket["username"];
+    });
+
+    socket.on("exit_room", () => {
+        const data_msg = {
+            "type": "user_exit",
+            "username": socket["username"]
+        }
+
+        socket.rooms.forEach((room) => socket.to(room).emit("system_msg", data_msg));
+    });
+
+    socket.on("disconnecting", () => {
+        if (socket.username == "Unknown") return;
+        publicRooms = getPublicRooms();
+        const data_msg = {
+            "type": "user_exit",
+            "username": socket["username"]
+        }
+
+        let current_room;
+        socket.rooms.forEach((room) => {
+            if (publicRooms.indexOf(room) !== -1) {
+                current_room = room;
+                socket.leave(room);
+            }
+        });
+
+        const roomSize = io.sockets.adapter.rooms.get(current_room)?.size;
+        if (roomSize > 0) {
+            socket.rooms.forEach((room) => socket.to(room).emit("system_msg", data_msg));
+        } else {
+            io.sockets.emit("refreshRoomList", getPublicRooms());
+        }
     });
 });
 
