@@ -24,7 +24,7 @@ const io = new Server(httpServer, {
 let publicRooms;
 function getPublicRooms() {
     const {sockets: {adapter: { sids, rooms }}} = io;
-    const publicRooms = [];
+    let publicRooms = [];
     rooms.forEach((_, key) => {
         if (sids.get(key) === undefined) publicRooms.push(key);
     });
@@ -60,6 +60,7 @@ io.on("connection", (socket) => {
             socket.emit("error", "That room name already exist");
         } else {
             socket.join(roomName);
+            publicRooms = getPublicRooms();
             console.log(`Room ${roomName} is created`);
 
             io.sockets.emit("change_room", roomName);
@@ -101,8 +102,16 @@ io.on("connection", (socket) => {
             "type": "user_exit",
             "username": socket["username"]
         }
+        console.log("exit_room");
 
-        socket.rooms.forEach((room) => socket.to(room).emit("system_msg", data_msg));
+        socket.rooms.forEach((room) => {
+            socket.to(room).emit("system_msg", data_msg);
+            if (publicRooms.indexOf(room) !== -1) {
+                socket.leave(room);
+                publicRooms = getPublicRooms();
+                io.sockets.emit("refreshRoomList", publicRooms);
+            }
+        });
     });
 
     socket.on("disconnecting", () => {

@@ -74,6 +74,13 @@ function handleRoomExit() {
     box_main.classList.remove(CLASS_HIDDEN);
 
     socket.emit("exit_room");
+    refreshChatList();
+}
+
+function refreshChatList() {
+    while (list_msg.firstChild) {
+        list_msg.removeChild(list_msg.firstChild);
+    }
 }
 
 function handleMsgSubmit(e, isWithKeyPress) {
