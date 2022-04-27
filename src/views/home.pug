@@ -4,9 +4,10 @@ html(lang="en")
         meta(charset="UTF-8")
         meta(http-equiv="X-UA-Compatible", content="IE=edge")
         meta(name="viewport", content="width=device-width, initial-scale=1.0")
+        script(src="https://kit.fontawesome.com/d70c3347c5.js", crossorigin="anonymous")
         style
             include style.css
-        title Document
+        title Chat App
     body
         div#app
             div#box_front
@@ -16,7 +17,7 @@ html(lang="en")
                     button 확인
             div#box_main
                 nav
-                    ul#list_menu
+                    ul.list_menu
                         li#user_info
                         li#chat_info
                 main
@@ -24,10 +25,13 @@ html(lang="en")
                         form#frm_room
                             input(type="text")
                             button Send
+                        ul.list_menu
+                            li
+                                i#btn_newChat.fa-solid.fa-comment-dots.fa-xl
                     ul#list_room
             div#box_chat
                 div#nav_chat
-                    img#icon_exit(src="public/image/icon_exit.png")
+                    i#icon_exit.fa-solid.fa-arrow-right-from-bracket.fa-lg
                 ul#list_msg
                 form#frm_msg
                     textarea

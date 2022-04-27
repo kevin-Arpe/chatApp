@@ -61,10 +61,7 @@ io.on("connection", (socket) => {
         } else {
             socket.join(roomName);
             publicRooms = getPublicRooms();
-            console.log(`Room ${roomName} is created`);
-
             io.sockets.emit("change_room", roomName);
-
             browserFunc();
         }
     });
@@ -92,7 +89,6 @@ io.on("connection", (socket) => {
         }
         
         browserFunc();
-        console.log(`${data_msg.username} : ${data_msg.msg}`);
         socket.rooms.forEach((room) => socket.to(room).emit("send_msg", data_msg));
         prevSendUser = socket["username"];
     });
@@ -102,7 +98,6 @@ io.on("connection", (socket) => {
             "type": "user_exit",
             "username": socket["username"]
         }
-        console.log("exit_room");
 
         socket.rooms.forEach((room) => {
             socket.to(room).emit("system_msg", data_msg);
