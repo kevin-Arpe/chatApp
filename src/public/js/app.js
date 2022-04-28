@@ -11,10 +11,11 @@ const input_username = frm_username.querySelector("input");
 const btn_username = frm_username.querySelector("button");
 
 const box_main = document.getElementById("box_main");
-const frm_room = box_main.querySelector("#frm_room");
+const frm_room = document.querySelector("#frm_room");
 const input_room = frm_room.querySelector("input");
 const btn_room = frm_room.querySelector("button");
 const menu_top = box_main.querySelector("#menu_top");
+const btn_newChat = document.querySelector("#btn_newChat");
 const list_room = box_main.querySelector("#list_room");
 
 const box_chat = document.getElementById("box_chat");
@@ -25,6 +26,19 @@ const input_msg = frm_msg.querySelector("textarea");
 const btn_msg = frm_msg.querySelector("button");
 
 /* App Scripts */
+function handleChatIconClick() {
+    if (frm_room.classList[0] == CLASS_HIDDEN) {
+        frm_room.classList.remove(CLASS_HIDDEN);
+
+        input_room.classList.remove("slide-down");
+        input_room.classList.add("slide-down");
+        input_room.focus();
+    } else {
+        input_room.classList.remove("slide-down");
+        frm_room.classList.add(CLASS_HIDDEN);
+    }
+}
+
 function handleUsernameSubmit(e) {
     e.preventDefault();
     const username = input_username.value;
@@ -169,10 +183,18 @@ function drawSystemMsg(data_msg) {
 }
 
 function init() {
-    box_main.classList.add(CLASS_HIDDEN);
-    box_chat.classList.add(CLASS_HIDDEN);
-
+    // document.addEventListener("mouseup", (e) => {
+    //     if (!frm_room.contains(e.target)) {
+    //         newChatRoomOverlay.classList.add(CLASS_HIDDEN);
+    //     }
+    // });
+    // document.addEventListener("keydown", (e) => {
+    //     if (e.key == "Escape" && frm_room.classList[0] == undefined) {
+    //         newChatRoomOverlay.classList.add(CLASS_HIDDEN);
+    //     }
+    // });
     frm_username.addEventListener("submit", handleUsernameSubmit);
+    btn_newChat.addEventListener("click", handleChatIconClick);
     frm_room.addEventListener("submit", handleRoomCreate);
     icon_exit.addEventListener("click", handleRoomExit);
     frm_msg.addEventListener("submit", handleMsgSubmit);

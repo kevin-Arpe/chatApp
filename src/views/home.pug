@@ -22,12 +22,11 @@ html(lang="en")
                         li#chat_info
                 main
                     div#menu_top
-                        form#frm_room
-                            input(type="text")
-                            button Send
                         ul.list_menu
                             li
                                 i#btn_newChat.fa-solid.fa-comment-dots.fa-xl
+                    form#frm_room.hidden
+                        input(type="text", placeholder="새로운 채팅방 이름")
                     ul#list_room
             div#box_chat
                 div#nav_chat
