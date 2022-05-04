@@ -20,11 +20,17 @@ html(lang="en")
                     ul.list_menu
                         li#user_info
                         li#chat_info
+                    i.fa-solid.fa-right-from-bracket.fa-lg#btn_logout(title="로그아웃")
                 main
                     div#menu_top
+                        div#btn_sort.noselect 채팅
+                            i.fa-solid.fa-caret-down.fa-sm
+                        ul#list_sort.hidden
+                            li 생성순
+                            li 이름순
                         ul.list_menu
                             li
-                                i#btn_newChat.fa-solid.fa-comment-dots.fa-xl
+                                i#btn_newChat.fa-solid.fa-comment-dots.fa-xl(title="새 채팅")
                     form#frm_room.hidden
                         input(type="text", placeholder="새로운 채팅방 이름")
                     ul#list_room
@@ -33,8 +39,8 @@ html(lang="en")
                     i#icon_exit.fa-solid.fa-arrow-right-from-bracket.fa-lg
                 ul#list_msg
                 form#frm_msg
-                    textarea
-                    button 전송  
+                    textarea(tabindex="-1")
+                    button(tabindex="-1") 전송  
             
     script(src="/socket.io/socket.io.js")
     script(src="public/js/app.js")

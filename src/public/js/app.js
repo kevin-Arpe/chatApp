@@ -11,10 +11,13 @@ const input_username = frm_username.querySelector("input");
 const btn_username = frm_username.querySelector("button");
 
 const box_main = document.getElementById("box_main");
+const btn_logout = document.getElementById("btn_logout");
 const frm_room = document.querySelector("#frm_room");
 const input_room = frm_room.querySelector("input");
 const btn_room = frm_room.querySelector("button");
 const menu_top = box_main.querySelector("#menu_top");
+const btn_sort = document.querySelector("#btn_sort");
+const list_sort = document.querySelector("#list_sort");
 const btn_newChat = document.querySelector("#btn_newChat");
 const list_room = box_main.querySelector("#list_room");
 
@@ -32,7 +35,10 @@ function handleChatIconClick() {
 
         input_room.classList.remove("slide-down");
         input_room.classList.add("slide-down");
-        input_room.focus();
+
+        setTimeout(() => {
+            input_room.focus();
+        }, 200);
     } else {
         input_room.classList.remove("slide-down");
         frm_room.classList.add(CLASS_HIDDEN);
@@ -48,14 +54,28 @@ function handleUsernameSubmit(e) {
     input_username.value = "";
 }
 
+function handleLogout() {
+    const logoutCheck = confirm("로그아웃 하시겠습니까?");
+    if (!logoutCheck) return;
+    socket.emit("logout");
+    box_front.classList.remove(CLASS_HIDDEN);
+    box_main.classList.add(CLASS_HIDDEN);
+}
+
+function showSortList() {
+    if (list_sort.classList[0] == undefined) {
+        list_sort.classList.add(CLASS_HIDDEN);
+    } else {
+        list_sort.classList.remove(CLASS_HIDDEN);
+    }
+}
+
 function showRooms() {
     box_front.classList.add(CLASS_HIDDEN);
     box_main.classList.remove(CLASS_HIDDEN);
 }
 
 function enterRoom(roomName) {
-    console.log(`Enter room(Room name : ${roomName})`);
-    
     box_main.classList.add(CLASS_HIDDEN);
     box_chat.classList.remove(CLASS_HIDDEN);
 
@@ -68,7 +88,7 @@ function enterRoom(roomName) {
 }
 
 function handleRoomClk() {
-    const roomName = this.innerText;
+    const roomName = this.getElementsByClassName("text_roomName")[0].innerText;
     socket.emit("enter_room", roomName, enterRoom);
 }
 
@@ -121,13 +141,13 @@ function handleMsgKeyPress(e) {
 function makeRoomList(roomName) {
     const li = document.createElement("li");
     const icon_room = document.createElement("div");
-    const text_roomname = document.createElement("div");
+    const text_roomName = document.createElement("span");
     icon_room.classList.add("icon_room");
-    text_roomname.classList.add("text_roomname");
-    text_roomname.innerText = roomName;
+    text_roomName.classList.add("text_roomName");
+    text_roomName.innerText = roomName;
 
     li.appendChild(icon_room);
-    li.appendChild(text_roomname);
+    li.appendChild(text_roomName);
     li.addEventListener("click", handleRoomClk);
     list_room.appendChild(li);
 }
@@ -193,7 +213,10 @@ function init() {
     //         newChatRoomOverlay.classList.add(CLASS_HIDDEN);
     //     }
     // });
+
     frm_username.addEventListener("submit", handleUsernameSubmit);
+    btn_logout.addEventListener("click", handleLogout);
+    btn_sort.addEventListener("click", showSortList);
     btn_newChat.addEventListener("click", handleChatIconClick);
     frm_room.addEventListener("submit", handleRoomCreate);
     icon_exit.addEventListener("click", handleRoomExit);
@@ -210,11 +233,11 @@ function init() {
             list_room.removeChild(list_room.firstChild);
         }
         const roomList = publicRooms;
-        roomList.forEach((roomName) => makeRoomList(roomName));
+        roomList.forEach((room) => makeRoomList(room));
     });
 
-    socket.on("change_room", (roomName) => {
-        makeRoomList(roomName);
+    socket.on("create_room", (roomName) => {
+        makeRoomList(roomName, 1);
     });
 
     socket.on("send_msg", (data_msg) => {

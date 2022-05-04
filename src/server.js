@@ -24,7 +24,7 @@ const io = new Server(httpServer, {
 let publicRooms;
 function getPublicRooms() {
     const {sockets: {adapter: { sids, rooms }}} = io;
-    let publicRooms = [];
+    publicRooms = [];
     rooms.forEach((_, key) => {
         if (sids.get(key) === undefined) publicRooms.push(key);
     });
@@ -40,12 +40,15 @@ io.on("connection", (socket) => {
     });
 
     socket.on("make_username", (username, browserFunc) => {
-        socket["username"] = username;
+        if (username !== "") socket["username"] = username;
         browserFunc();
     });
 
+    socket.on("logout", () => {
+        socket["username"] = "Unknown";
+    });
+
     socket.on("create_room", (roomName, browserFunc) => {
-        console.log(io.sockets.adapter.rooms);
         const rooms = io.sockets.adapter.rooms;
 
         let isVaildRoomName = 1;
@@ -61,7 +64,7 @@ io.on("connection", (socket) => {
         } else {
             socket.join(roomName);
             publicRooms = getPublicRooms();
-            io.sockets.emit("change_room", roomName);
+            io.sockets.emit("create_room", roomName);
             browserFunc();
         }
     });
@@ -74,6 +77,7 @@ io.on("connection", (socket) => {
             "roomName": roomName
         }
 
+        io.sockets.emit("refreshRoomList", getPublicRooms());
         socket.rooms.forEach((room) => socket.to(room).emit("system_msg", data_msg));
         browserFunc(roomName);
     });
@@ -98,7 +102,6 @@ io.on("connection", (socket) => {
             "type": "user_exit",
             "username": socket["username"]
         }
-
         socket.rooms.forEach((room) => {
             socket.to(room).emit("system_msg", data_msg);
             if (publicRooms.indexOf(room) !== -1) {
