@@ -224,10 +224,12 @@ nav > #btn_logout:hover {
     height: 1.6rem;
     line-height: 1.6rem;
     text-align: center;
+    cursor: pointer;
 }
 
 #menu_top > #list_sort > li:hover {
     font-weight: 600;
+    background-color: #555;
 }
 
 #menu_top > .list_menu {

@@ -1,3 +1,7 @@
+/* Object */
+let data_publicRooms = [];
+let roomSortType = "ord_create";
+
 /* CLASS_NAME */
 const CLASS_HIDDEN = "hidden";
 
@@ -62,12 +66,31 @@ function handleLogout() {
     box_main.classList.add(CLASS_HIDDEN);
 }
 
-function showSortList() {
+function showSortList(e) {
     if (list_sort.classList[0] == undefined) {
         list_sort.classList.add(CLASS_HIDDEN);
     } else {
         list_sort.classList.remove(CLASS_HIDDEN);
     }
+}
+
+function handleRoomSort(e) {
+    const sortType = e.target.id;
+
+    if (roomSortType !== "ord_create" && sortType == "ord_create") {
+        deleteRoomList();
+        socket.emit("req_roomInfo");
+        roomSortType = "ord_create";
+    } else if (roomSortType !== "ord_name" && sortType == "ord_name") {
+        deleteRoomList();
+        data_publicRooms.sort();
+        data_publicRooms.forEach((room  ) => makeRoomList(room));
+        roomSortType = "ord_name";
+    } else {
+        return;
+    }
+
+    showSortList();
 }
 
 function showRooms() {
@@ -108,6 +131,7 @@ function handleRoomExit() {
     box_main.classList.remove(CLASS_HIDDEN);
 
     socket.emit("exit_room");
+    roomSortType = "ord_create";
     refreshChatList();
 }
 
@@ -135,6 +159,12 @@ function handleMsgKeyPress(e) {
             e.preventDefault();
             handleMsgSubmit(isWithKeyPress)
         };
+    }
+}
+
+function deleteRoomList() {
+    while (list_room.firstChild) {
+        list_room.removeChild(list_room.firstChild);
     }
 }
 
@@ -216,7 +246,10 @@ function init() {
 
     frm_username.addEventListener("submit", handleUsernameSubmit);
     btn_logout.addEventListener("click", handleLogout);
+
     btn_sort.addEventListener("click", showSortList);
+    list_sort.addEventListener("click", handleRoomSort);
+
     btn_newChat.addEventListener("click", handleChatIconClick);
     frm_room.addEventListener("submit", handleRoomCreate);
     icon_exit.addEventListener("click", handleRoomExit);
@@ -229,15 +262,14 @@ function init() {
     });
 
     socket.on("refreshRoomList", (publicRooms) => {
-        while (list_room.firstChild) {
-            list_room.removeChild(list_room.firstChild);
-        }
-        const roomList = publicRooms;
-        roomList.forEach((room) => makeRoomList(room));
+        deleteRoomList();
+        data_publicRooms = publicRooms.slice();
+        data_publicRooms.forEach((room) => makeRoomList(room));
     });
 
     socket.on("create_room", (roomName) => {
-        makeRoomList(roomName, 1);
+        data_publicRooms.push(roomName);
+        makeRoomList(roomName);
     });
 
     socket.on("send_msg", (data_msg) => {
