@@ -19,6 +19,8 @@ const btn_logout = document.getElementById("btn_logout");
 const frm_room = document.querySelector("#frm_room");
 const input_room = frm_room.querySelector("input");
 const btn_room = frm_room.querySelector("button");
+const input_img = document.getElementById("input_img");
+
 const menu_top = box_main.querySelector("#menu_top");
 const btn_sort = document.querySelector("#btn_sort");
 const list_sort = document.querySelector("#list_sort");
@@ -118,12 +120,34 @@ function handleRoomClk() {
 function handleRoomCreate(e) {
     e.preventDefault();
     const roomName = input_room.value;
+    let base64 = "";
 
     if (roomName === "") return;
-    socket.emit("create_room", roomName, () => {
-        enterRoom(roomName);
-    });
-    input_room.value = "";
+
+    const isGetImage = confirm("채팅방 로고 이미지를 추가하시겠습니까?");
+    if (isGetImage) {
+        input_img.value = "";
+        input_img.click();
+        input_img.addEventListener("change", (e) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(e.target.files[0]);
+            reader.onload = function() {
+                base64 = reader.result.replace(/.*base64,/, '');
+                socket.emit("create_room", roomName, base64, () => {
+                    enterRoom(roomName);
+                });
+                input_room.value = "";
+            }
+            reader.onerror = function(err) {
+                console.log(err);
+            }
+        });
+    } else {
+        socket.emit("create_room", roomName, base64, () => {
+            enterRoom(roomName);
+        });
+        input_room.value = "";
+    }
 }
 
 function handleRoomExit() {
@@ -168,13 +192,15 @@ function deleteRoomList() {
     }
 }
 
-function makeRoomList(roomName) {
+function makeRoomList(roomName, base64) {
     const li = document.createElement("li");
-    const icon_room = document.createElement("div");
+    const icon_room = document.createElement("img");
     const text_roomName = document.createElement("span");
     icon_room.classList.add("icon_room");
     text_roomName.classList.add("text_roomName");
     text_roomName.innerText = roomName;
+
+    console.log(base64);
 
     li.appendChild(icon_room);
     li.appendChild(text_roomName);
@@ -252,6 +278,7 @@ function init() {
 
     btn_newChat.addEventListener("click", handleChatIconClick);
     frm_room.addEventListener("submit", handleRoomCreate);
+
     icon_exit.addEventListener("click", handleRoomExit);
     frm_msg.addEventListener("submit", handleMsgSubmit);
     input_msg.addEventListener("keydown", handleMsgKeyPress);
@@ -267,9 +294,9 @@ function init() {
         data_publicRooms.forEach((room) => makeRoomList(room));
     });
 
-    socket.on("create_room", (roomName) => {
+    socket.on("create_room", (roomName, logo_64) => {
         data_publicRooms.push(roomName);
-        makeRoomList(roomName);
+        makeRoomList(roomName, logo_64);
     });
 
     socket.on("send_msg", (data_msg) => {

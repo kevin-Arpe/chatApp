@@ -21,7 +21,8 @@ const io = new Server(httpServer, {
     },
 });
 
-let publicRooms;
+let publicRooms = [];
+let roomLogos = {};
 function getPublicRooms() {
     const {sockets: {adapter: { sids, rooms }}} = io;
     publicRooms = [];
@@ -48,8 +49,9 @@ io.on("connection", (socket) => {
         socket["username"] = "Unknown";
     });
 
-    socket.on("create_room", (roomName, browserFunc) => {
+    socket.on("create_room", (roomName, base64, browserFunc) => {
         const rooms = io.sockets.adapter.rooms;
+        roomLogos.roomName = base64;
 
         let isVaildRoomName = 1;
         rooms.forEach((_, key) => {
@@ -64,7 +66,7 @@ io.on("connection", (socket) => {
         } else {
             socket.join(roomName);
             publicRooms = getPublicRooms();
-            io.sockets.emit("create_room", roomName);
+            io.sockets.emit("create_room", roomName, roomLogos[roomName]);
             browserFunc();
         }
     });

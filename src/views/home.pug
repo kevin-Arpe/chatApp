@@ -31,6 +31,8 @@ html(lang="en")
                         ul.list_menu
                             li
                                 i#btn_newChat.fa-solid.fa-comment-dots.fa-xl(title="새 채팅")
+                            li.hidden
+                                input#input_img(type="file" required)
                     form#frm_room.hidden
                         input(type="text", placeholder="새로운 채팅방 이름")
                     ul#list_room
