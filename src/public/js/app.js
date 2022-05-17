@@ -1,5 +1,6 @@
 /* Object */
 let data_publicRooms = [];
+const logo_publicRooms = {};
 let roomSortType = "ord_create";
 
 /* CLASS_NAME */
@@ -86,7 +87,7 @@ function handleRoomSort(e) {
     } else if (roomSortType !== "ord_name" && sortType == "ord_name") {
         deleteRoomList();
         data_publicRooms.sort();
-        data_publicRooms.forEach((room  ) => makeRoomList(room));
+        data_publicRooms.forEach((room) => makeRoomList(room));
         roomSortType = "ord_name";
     } else {
         return;
@@ -192,17 +193,24 @@ function deleteRoomList() {
     }
 }
 
-function makeRoomList(roomName, base64) {
+function makeRoomList(roomName) {
     const li = document.createElement("li");
+    const img_container = document.createElement("div");
     const icon_room = document.createElement("img");
     const text_roomName = document.createElement("span");
     icon_room.classList.add("icon_room");
     text_roomName.classList.add("text_roomName");
     text_roomName.innerText = roomName;
 
-    console.log(base64);
+    const base64 = logo_publicRooms[roomName];
+    if (base64 !== "") {
+        icon_room.src = `data:image/png;base64, ${base64}`;
+    } else {
+        icon_room.src = `data:image/png;base64, ${logo_publicRooms["default"]}`;
+    }
 
-    li.appendChild(icon_room);
+    img_container.appendChild(icon_room);
+    li.appendChild(img_container);
     li.appendChild(text_roomName);
     li.addEventListener("click", handleRoomClk);
     list_room.appendChild(li);
@@ -288,15 +296,23 @@ function init() {
         socket.emit("req_roomInfo");
     });
 
-    socket.on("refreshRoomList", (publicRooms) => {
+    socket.on("refreshRoomList", (publicRooms, logos) => {
         deleteRoomList();
         data_publicRooms = publicRooms.slice();
-        data_publicRooms.forEach((room) => makeRoomList(room));
+
+        if (logos !== null) {
+            data_publicRooms.forEach((room) => {
+                if (!logo_publicRooms[room]) logo_publicRooms[room] = logos[room];
+            });
+            logo_publicRooms["default"] = logos["default"];
+        }
+        data_publicRooms.forEach((room) => makeRoomList(room, logo_publicRooms[room]));
     });
 
     socket.on("create_room", (roomName, logo_64) => {
         data_publicRooms.push(roomName);
-        makeRoomList(roomName, logo_64);
+        logo_publicRooms[roomName] = logo_64;
+        makeRoomList(roomName);
     });
 
     socket.on("send_msg", (data_msg) => {
