@@ -338,6 +338,7 @@ nav > #btn_logout:hover {
     background-color: rgb(64, 64, 64);
     padding: 0;
     padding-top: 5px;
+    padding-bottom: 5px;
     margin: 0;
     font-size: 0.9rem;
     overflow: auto;

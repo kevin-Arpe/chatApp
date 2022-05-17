@@ -223,6 +223,7 @@ function drawMyChat(msg) {
     textBox.innerText = msg;
     li.appendChild(textBox);
     list_msg.appendChild(li);
+    list_msg.scrollTop = list_msg.scrollHeight;
 }
 
 function drawFriendsChat(username, msg, isSameUser) {
@@ -243,6 +244,7 @@ function drawFriendsChat(username, msg, isSameUser) {
     div.appendChild(textBox);
     li.appendChild(div);
     list_msg.appendChild(li);
+    list_msg.scrollTop = list_msg.scrollHeight;
 }
 
 function drawSystemMsg(data_msg) {
@@ -264,6 +266,7 @@ function drawSystemMsg(data_msg) {
 
     li.appendChild(textBox);
     list_msg.appendChild(li);
+    list_msg.scrollTop = list_msg.scrollHeight;
 }
 
 function init() {
@@ -315,12 +318,12 @@ function init() {
         makeRoomList(roomName);
     });
 
-    socket.on("send_msg", (data_msg) => {
+    socket.on("get_msg", (data_msg) => {
         const username = data_msg.username;
         const msg = data_msg.msg;
         const isSameUser = data_msg.isSameUser;
 
-        console.log(`${username}: ${msg}`);
+        console.log(`${username}: ${msg}, ${isSameUser}`);
         drawFriendsChat(username, msg, isSameUser);
     });
 

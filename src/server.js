@@ -32,8 +32,9 @@ function getPublicRooms() {
     return publicRooms;
 }
 
+let prevSendUser = "";
 io.on("connection", (socket) => {
-    let prevSendUser = "";
+    
     socket["username"] = "Unknown";
 
     socket.on("req_roomInfo", () => {
@@ -86,17 +87,18 @@ io.on("connection", (socket) => {
 
     socket.on("send_msg", (msg, browserFunc) => {
         let isSameUser = 0;
+        const username = socket["username"];
         if (prevSendUser == socket["username"]) isSameUser = 1;
 
         const data_msg = {
-            "username": socket["username"],
+            "username": username,
             "msg": msg,
             "isSameUser": isSameUser
         }
         
         browserFunc();
-        socket.rooms.forEach((room) => socket.to(room).emit("send_msg", data_msg));
-        prevSendUser = socket["username"];
+        socket.rooms.forEach((room) => socket.to(room).emit("get_msg", data_msg));
+        prevSendUser = username;
     });
 
     socket.on("exit_room", () => {
